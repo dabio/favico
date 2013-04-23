@@ -20,6 +20,7 @@ Serves the favicon from the following sources:
 
 1. Memcache
 2. Postgres
+3. Googles Service: https://plus.google.com/_/favicon?domain=flickr.com
 3. Domain-Root
 4. Page Link
 5. Default Icon
