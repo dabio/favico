@@ -15,6 +15,16 @@ func main() {
 	}
 }
 
+/*
+Serves the favicon from the following sources:
+
+1. Memcache
+2. Postgres
+3. Domain-Root
+4. Page Link
+5. Default Icon
+*/
+
 func hello(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(res, "hello, world")
 }
