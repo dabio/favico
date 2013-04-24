@@ -2,11 +2,27 @@ package main
 
 import (
 	"fmt"
+	"github.com/bmizerany/mc"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
+
+var cn mc.Conn
+
+// init sets the variables needed for our program
+func init() {
+	cn, err := mc.Dial("tcp", os.Getenv("MEMCACHIER_SERVERS"))
+	if err != nil {
+		panic(err)
+	}
+
+	err = cn.Auth(os.Getenv("MEMCACHIER_USERNAME"), os.Getenv("MEMCACHIER_PASSWORD"))
+	if err != nil {
+		panic(err)
+	}
+}
 
 func main() {
 	http.HandleFunc("/", track(index))
@@ -34,10 +50,14 @@ func index(w http.ResponseWriter, r *http.Request) {
 func favicon(w http.ResponseWriter, r *http.Request) {
 	domain := r.FormValue("domain")
 
-	source := "Google"
-	icon, err := fromGoogle(domain)
+	source := "Cache"
+	icon, err := fromCache(domain)
 	if err != nil {
-		panic(err)
+		source = "Google"
+		icon, err = fromGoogle(domain)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	w.Header().Set("X-Source", source)
@@ -46,7 +66,16 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "%s", icon)
 
-	go saveIcon(icon)
+	go saveIcon(domain, icon)
+}
+
+func fromCache(domain string) ([]byte, error) {
+	val, _, _, err := cn.Get(domain)
+	if err != nil {
+		panic(err)
+	}
+
+	return []byte(val), err
 }
 
 // fromGoogle connects to the google favicon service and tries to fetch the
@@ -69,6 +98,11 @@ func fromGoogle(domain string) ([]byte, error) {
 
 // saveIcon tries to save the icon to a memcache storage. The call of this
 // function should be done in a Goroutine.
-func saveIcon(icon []byte) {
+func saveIcon(domain string, icon []byte) {
+	err := cn.Set(domain, string(icon), 0, 0, 86400)
+	if err != nil {
+		return
+	}
+
 	log.Println("Save to memcached")
 }
