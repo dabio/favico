@@ -7,10 +7,16 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", hello)
-	fmt.Println("listening...")
-	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
-	if err != nil {
+	http.HandleFunc("/", track(index))
+	http.HandleFunc("/favicon", track(favicon))
+
+	var port string
+	if port = os.Getenv("PORT"); port == "" {
+		port = "5000"
+	}
+
+	fmt.Println("listening on port " + port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		panic(err)
 	}
 }
@@ -25,6 +31,10 @@ Serves the favicon from the following sources:
 5. Default Icon
 */
 
-func hello(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(res, "hello, world")
+func index(res http.ResponseWriter, req *http.Request) {
+	fmt.Fprintln(res, "/favicon?domain=google.com")
+}
+
+func favicon(res http.ResponseWriter, req *http.Request) {
+	fmt.Fprintln(res, req.FormValue("domain"))
 }
