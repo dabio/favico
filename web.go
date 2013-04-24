@@ -12,8 +12,8 @@ func main() {
 	http.HandleFunc("/", track(index))
 	http.HandleFunc("/favicon", track(favicon))
 
-	var port string
-	if port = os.Getenv("PORT"); port == "" {
+	port := os.Getenv("PORT")
+	if port == "" {
 		port = "5000"
 	}
 
@@ -23,37 +23,35 @@ func main() {
 	}
 }
 
-/*
-Serves the favicon from the following sources:
-
-1. Memcache
-2. Postgres
-3. Googles Service: https://plus.google.com/_/favicon?domain=flickr.com
-3. Domain-Root
-4. Page Link
-5. Default Icon
-*/
-
+// index shows the homepage. A small reminder how to use this service.
 func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "/favicon?domain=google.com")
 }
 
+// favicon tries to get the favicon from these sources:
+// 1. Memcache
+// 2. Google Service
 func favicon(w http.ResponseWriter, r *http.Request) {
-	icon, err := fromGoogle(r.FormValue("domain"))
+	domain := r.FormValue("domain")
 
+	source := "Google"
+	icon, err := fromGoogle(domain)
 	if err != nil {
 		panic(err)
 	}
 
+	w.Header().Set("X-Source", source)
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 
 	fmt.Fprintf(w, "%s", icon)
+
+	go saveIcon(icon)
 }
 
+// fromGoogle connects to the google favicon service and tries to fetch the
+// favicon.
 func fromGoogle(domain string) ([]byte, error) {
-	log.Println(fmt.Sprintf("Fetch from Google for domain '%s'", domain))
-
 	service := fmt.Sprintf("https://plus.google.com/_/favicon?domain=%s", domain)
 	response, err := http.Get(service)
 	if err != nil {
@@ -67,4 +65,10 @@ func fromGoogle(domain string) ([]byte, error) {
 	}
 
 	return contents, nil
+}
+
+// saveIcon tries to save the icon to a memcache storage. The call of this
+// function should be done in a Goroutine.
+func saveIcon(icon []byte) {
+	log.Println("Save to memcached")
 }
