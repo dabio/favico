@@ -1,11 +1,11 @@
 package main
 
 import (
-"net/http"
-"log"
-"time"
-"runtime"
-"reflect"
+	"log"
+	"net/http"
+	"reflect"
+	"runtime"
+	"time"
 )
 
 func timeTrack(start time.Time, name string) {
@@ -23,4 +23,3 @@ func track(fn http.HandlerFunc) http.HandlerFunc {
 func getFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
-
