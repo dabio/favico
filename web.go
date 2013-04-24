@@ -8,6 +8,12 @@ import (
 	"os"
 )
 
+var remote_service_url string
+
+func init() {
+	remote_service_url = "https://plus.google.com/_/favicon?domain=%s"
+}
+
 func main() {
 	http.HandleFunc("/", track(index))
 	http.HandleFunc("/favicon", track(favicon))
@@ -52,8 +58,7 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 // fromGoogle connects to the google favicon service and tries to fetch the
 // favicon.
 func fromGoogle(domain string) ([]byte, error) {
-	service := fmt.Sprintf("https://plus.google.com/_/favicon?domain=%s", domain)
-	response, err := http.Get(service)
+	response, err := http.Get(fmt.Sprintf(remote_service_url, domain))
 	if err != nil {
 		return nil, err
 	}
