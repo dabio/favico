@@ -10,9 +10,12 @@ import (
 )
 
 var cn mc.Conn
+var remote_service_url string
 
 // init sets the variables needed for our program
 func init() {
+	remote_service_url = "https://plus.google.com/_/favicon?domain=%s"
+
 	cn, err := mc.Dial("tcp", os.Getenv("MEMCACHIER_SERVERS"))
 	if err != nil {
 		panic(err)
@@ -22,7 +25,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-}
 
 func main() {
 	http.HandleFunc("/", track(index))
@@ -81,8 +83,7 @@ func fromCache(domain string) ([]byte, error) {
 // fromGoogle connects to the google favicon service and tries to fetch the
 // favicon.
 func fromGoogle(domain string) ([]byte, error) {
-	service := fmt.Sprintf("https://plus.google.com/_/favicon?domain=%s", domain)
-	response, err := http.Get(service)
+	response, err := http.Get(fmt.Sprintf(remote_service_url, domain))
 	if err != nil {
 		return nil, err
 	}
