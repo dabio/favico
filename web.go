@@ -75,7 +75,7 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 func fromCache(domain string) ([]byte, error) {
 	val, _, _, err := cn.Get(domain)
 	if err != nil {
-		nil, err
+		return nil, err
 	}
 
 	return []byte(val), nil
