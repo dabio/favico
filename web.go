@@ -75,10 +75,10 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 func fromCache(domain string) ([]byte, error) {
 	val, _, _, err := cn.Get(domain)
 	if err != nil {
-		panic(err)
+		nil, err
 	}
 
-	return []byte(val), err
+	return []byte(val), nil
 }
 
 // fromGoogle connects to the google favicon service and tries to fetch the
