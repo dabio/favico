@@ -25,6 +25,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+}
 
 func main() {
 	http.HandleFunc("/", track(index))
