@@ -24,9 +24,7 @@ func main() {
 	}
 
 	log.Println("listening on port " + port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		panic(err)
-	}
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 // index shows the homepage. A small reminder how to use this service.
@@ -43,7 +41,7 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 	source := "Google"
 	icon, err := fromGoogle(domain)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	w.Header().Set("X-Source", source)
