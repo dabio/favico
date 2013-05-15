@@ -1,30 +1,26 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 )
 
-var remote_service_url string
-
-func init() {
+var (
+	port               = flag.String("port", "5000", "Listen port")
 	remote_service_url = "https://plus.google.com/_/favicon?domain=%s"
-}
+)
 
 func main() {
+	flag.Parse()
+
 	http.HandleFunc("/", track(index))
 	http.HandleFunc("/favicon", track(favicon))
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "5000"
-	}
-
-	log.Println("listening on port " + port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Println("listening on port " + *port)
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
 
 // index shows the homepage. A small reminder how to use this service.
