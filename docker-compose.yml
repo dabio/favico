@@ -1,0 +1,13 @@
+version: "2"
+
+services:
+  app:
+    image: golang:1.7-alpine
+    volumes:
+      - .:/go/src/favico
+    working_dir: /go/src/favico
+    command: go run main.go
+    environment:
+      - PORT=8080
+    ports:
+      - "80:8080"
