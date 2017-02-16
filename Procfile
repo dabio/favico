@@ -1,1 +1,1 @@
-web: favico --port $PORT
+web: favico

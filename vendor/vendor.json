@@ -1,0 +1,7 @@
+{
+    "rootPath": "github.com/dabio/favico",
+    "heroku": {
+        "install": ["./..."],
+        "goVersion": "go1.7"
+    }
+}

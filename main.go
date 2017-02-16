@@ -1,31 +1,31 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"reflect"
+	"runtime"
+	"time"
 )
 
-var (
-	port               = flag.String("port", "5000", "Listen port")
-	remote_service_url = "https://plus.google.com/_/favicon?domain=%s"
-)
+const serviceURL = "https://plus.google.com/_/favicon?domain=%s"
 
 func main() {
-	flag.Parse()
+	port := os.Getenv("PORT")
 
 	http.HandleFunc("/", track(index))
 	http.HandleFunc("/favicon", track(favicon))
 
-	log.Println("listening on port " + *port)
-	log.Fatal(http.ListenAndServe(":"+*port, nil))
+	log.Println("listening on port " + port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 // index shows the homepage. A small reminder how to use this service.
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "/favicon?domain=google.com")
+	fmt.Fprintln(w, "/favicon?domain=facebook.com")
 }
 
 // favicon tries to get the favicon from these sources:
@@ -49,10 +49,10 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 	go saveIcon(icon)
 }
 
-// fromGoogle connects to the google favicon service and tries to fetch the
-// favicon.
+// fromGoogle connects to the google favicon service and tries to fetch
+// the favicon
 func fromGoogle(domain string) ([]byte, error) {
-	response, err := http.Get(fmt.Sprintf(remote_service_url, domain))
+	response, err := http.Get(fmt.Sprintf(serviceURL, domain))
 	if err != nil {
 		return nil, err
 	}
@@ -70,4 +70,20 @@ func fromGoogle(domain string) ([]byte, error) {
 // function should be done in a Goroutine.
 func saveIcon(icon []byte) {
 	log.Println("Save to memcached")
+}
+
+func timeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Printf("%s request took %s", name, elapsed)
+}
+
+func track(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		defer timeTrack(time.Now(), getFunctionName(fn))
+		fn(w, req)
+	}
+}
+
+func getFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
